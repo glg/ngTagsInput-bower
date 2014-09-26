@@ -1,11 +1,11 @@
 /*!
- * ngTagsInput v2.1.1
+ * ngTagsInput v2.2.0
  * http://mbenford.github.io/ngTagsInput
  *
  * Copyright (c) 2013-2014 Michael Benford
  * License: MIT
  *
- * Generated at 2014-09-04 01:27:58 -0300
+ * Generated at 2014-09-26 12:45:28 -0500
  */
 (function() {
 'use strict';
@@ -100,7 +100,8 @@ var tagsInput = angular.module('ngTagsInput', []);
  *
  * @param {string} ngModel Assignable angular expression to data-bind to.
  * @param {string=} [displayProperty=text] Property to be rendered as the tag label.
- * @param {string=} [input=text] Type of the input element. Only 'text', 'email' and 'url' are supported values.
+ * @param {string=} [keyProperty=text] Property to uniquely identify tags.
+ * @param {string=} [type=text] Type of the input element. Only 'text', 'email' and 'url' are supported values.
  * @param {number=} tabindex Tab order of the control.
  * @param {string=} [placeholder=Add a tag] Placeholder text for the control.
  * @param {number=} [minLength=3] Minimum length for a new tag.
@@ -144,7 +145,7 @@ tagsInput.directive('tagsInput', ["$timeout","$document","tagsInputConfig", func
                    tagText.length >= options.minLength &&
                    tagText.length <= options.maxLength &&
                    options.allowedTagsPattern.test(tagText) &&
-                   !findInObjectArray(self.items, tag, options.displayProperty);
+                   !findInObjectArray(self.items, tag, options.keyProperty);
         };
 
         self.items = [];
@@ -233,6 +234,7 @@ tagsInput.directive('tagsInput', ["$timeout","$document","tagsInputConfig", func
                 minTags: [Number, 0],
                 maxTags: [Number, MAX_SAFE_INTEGER],
                 displayProperty: [String, 'text'],
+                keyProperty: [String, 'text'],
                 allowLeftoverText: [Boolean, false],
                 addFromAutocompleteOnly: [Boolean, false]
             });
@@ -324,7 +326,7 @@ tagsInput.directive('tagsInput', ["$timeout","$document","tagsInputConfig", func
             };
 
             scope.track = function(tag) {
-                return tag[options.displayProperty];
+                return tag[options.keyProperty];
             };
 
             scope.newTagChange = function() {
@@ -332,7 +334,7 @@ tagsInput.directive('tagsInput', ["$timeout","$document","tagsInputConfig", func
             };
 
             scope.$watch('tags', function(value) {
-                scope.tags = makeObjectArray(value, options.displayProperty);
+                scope.tags = makeObjectArray(value, options.keyProperty);
                 tagList.items = scope.tags;
             });
 
@@ -411,6 +413,7 @@ tagsInput.directive('tagsInput', ["$timeout","$document","tagsInputConfig", func
     };
 }]);
 
+
 /**
  * @ngdoc directive
  * @name autoComplete
@@ -422,6 +425,7 @@ tagsInput.directive('tagsInput', ["$timeout","$document","tagsInputConfig", func
  * @param {expression} source Expression to evaluate upon changing the input content. The input value is available as
  *                            $query. The result of the expression must be a promise that eventually resolves to an
  *                            array of strings.
+ * @param {string=} [displayProperty=text] Property to be rendered as the tag label.
  * @param {number=} [debounceDelay=100] Amount of time, in milliseconds, to wait before evaluating the expression in
  *                                      the source option after the last keystroke.
  * @param {number=} [minLength=3] Minimum number of characters that must be entered before evaluating the expression
@@ -443,7 +447,7 @@ tagsInput.directive('autoComplete', ["$document","$timeout","$sce","tagsInputCon
 
         getDifference = function(array1, array2) {
             return array1.filter(function(item) {
-                return !findInObjectArray(array2, item, options.tagsInput.displayProperty);
+                return !findInObjectArray(array2, item, options.tagsInput.keyProperty);
             });
         };
 
@@ -475,7 +479,7 @@ tagsInput.directive('autoComplete', ["$document","$timeout","$sce","tagsInputCon
                         return;
                     }
 
-                    items = makeObjectArray(items.data || items, options.tagsInput.displayProperty);
+                    items = makeObjectArray(items.data || items, options.tagsInput.keyProperty);
                     items = getDifference(items, tags);
                     self.items = items.slice(0, options.maxResultsToShow);
 
@@ -526,7 +530,8 @@ tagsInput.directive('autoComplete', ["$document","$timeout","$sce","tagsInputCon
                 maxResultsToShow: [Number, 10],
                 loadOnDownArrow: [Boolean, false],
                 loadOnEmpty: [Boolean, false],
-                loadOnFocus: [Boolean, false]
+                loadOnFocus: [Boolean, false],
+                displayProperty: [String, 'text']
             });
 
             options = scope.options;
@@ -537,7 +542,7 @@ tagsInput.directive('autoComplete', ["$document","$timeout","$sce","tagsInputCon
             suggestionList = new SuggestionList(scope.source, options);
 
             getItem = function(item) {
-                return item[options.tagsInput.displayProperty];
+                return item[options.displayProperty];
             };
 
             getDisplayText = function(item) {
@@ -578,7 +583,7 @@ tagsInput.directive('autoComplete', ["$document","$timeout","$sce","tagsInputCon
             };
 
             scope.track = function(item) {
-                return getItem(item);
+                return item[options.tagsInput.keyProperty];
             };
 
             tagsInput
